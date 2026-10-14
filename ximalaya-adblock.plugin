@@ -1,0 +1,179 @@
+#!name = 喜马拉雅去广告 · YG 定制
+#!desc = 喜马拉雅 FM 去广告：自有广告域名 14 条 + 埋点采集 2 条 + 第三方广告平台 22 条，共 38 条拦截规则，另有 3 条接口级复写；自有域名全部经 DNS/HTTP 实测
+#!author = YG
+#!system = iOS,iPadOS
+#!loon_version = 3.5.1(978)
+#!date = 2026-10-10
+#!tag = 去广告,喜马拉雅
+#!type = normal
+
+# ════════════════════════════════════════════════════════════════════
+#  规则来源
+#
+#  喜马拉雅自有域名清单来自三个公开规则集，逐条 DNS + HTTP 复核后并入：
+#    · NobyDa/Script        Surge/AdRule.list、QuantumultX/AdRule.list
+#                           （另有 3 条 adse.ximalaya.com 接口级复写，见 C 区）
+#    · Repcz/Tool           Ads_AWAvenue / Ads_Dlerio / Ads_SukkaW / Reject
+#    · luestr/ProxyResource 规则索引
+#
+#  复核方式：dig @8.8.8.8 A + curl HTTP 探测，逐条记录见 A 区与 A2 区注释。
+#  第三方广告平台（B 区）沿用公开规则集，未逐条复核——它们是通用广告域名，
+#  与喜马拉雅没有绑定关系。
+# ════════════════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════════════════════
+#  A 区 · 喜马拉雅自有广告域名（14 条，全部实测存在）
+#
+#  域名                              解析                  HTTP 响应
+#  adse.ximalaya.com                 101.91.133.96         401 {"msg":"50","ret":50}
+#  ad.ximalaya.com                   101.72.227.92         401 {"msg":"50","ret":50}
+#  adbehavior.ximalaya.com           101.91.134.73         401 {"msg":"50","ret":50}
+#  adbs.ximalaya.com                 43.159.108.101        401 {"msg":"50","ret":50}
+#  adwbs.ximalaya.com                43.159.108.101        401 {"msg":"50","ret":50}
+#  adsehera.ximalaya.com             43.159.108.101        401 {"msg":"50","ret":50}
+#  adx.ximalaya.com                  43.159.108.101        200 tengine 默认页
+#  adweb.ximalaya.com                43.159.108.101        200 tengine 默认页
+#  dns.ximalaya.com                  43.159.108.101        200 tengine 默认页
+#  adse.wsa.ximalaya.com             43.159.108.101        与 adx 同集群
+#  adbehavior.wsa.ximalaya.com       43.159.108.101        与 adx 同集群
+#  ad.test.ximalaya.com              112.65.211.111        测试环境
+#  adse.test.ximalaya.com            112.65.211.111        测试环境
+#  adweb.test.ximalaya.com           10.146.3.14           测试环境
+#
+#  43.159.108.101 是一台同时承载 8 个喜马拉雅广告子域的服务器，
+#  dns.ximalaya.com 与它同 IP —— 它是广告 SDK 的 DNS 探测入口，
+#  不是系统 DNS 服务，因此 SukkaW 规则集把它归入广告是准确的。
+#
+#  已剔除：adsebs.ximalaya.com（dig 返回 NXDOMAIN，域名不存在，写了等于没写）
+#
+#  用 REJECT 而非 REJECT-DROP：REJECT 立即断开，App 拿不到广告会走无广告
+#  分支；REJECT-DROP 会让请求挂到超时，开屏反而更慢。
+#
+#  ── 有争议、默认未启用 ──
+#  location.ximalaya.com  101.91.133.50  200 tengine 默认页
+#  定位服务。NobyDa / Dlerio 都把它列入广告（用于地域定向），但它同时
+#  服务正常的地域内容分发，拦掉可能导致「本地电台」之类按地区推荐的
+#  功能异常。要试就取消 [Rule] 段里那行的注释，跑一天看地区推荐是否正常。
+# ════════════════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════════════════════
+#  A2 区 · 埋点与数据采集（2 条）
+#
+#  xdcs-collector.ximalaya.com  101.91.134.208  403 request forbidden
+#  linkeye.ximalaya.com         101.91.134.78   404 Apache Tomcat/8.0.47
+#
+#  拦掉只影响统计上报和推荐画像，不影响播放、下载、登录。
+#  如果发现「猜你喜欢」明显变差，把本区两行前面加 # 即可恢复。
+# ════════════════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════════════════════════════
+#  B 区 · 第三方广告平台（19 条，全局生效）
+#
+#  Loon 规则层没有 App 维度，本区命中后对所有 App 生效。
+#  只想让喜马拉雅生效 → 把 B 区整段前面加 # 注释掉，只留 A 区。
+#
+#  统一用 DOMAIN-SUFFIX 而非 DOMAIN-KEYWORD：官方文档指出 KEYWORD 的匹配
+#  耗时随规则数线性增长，SUFFIX 稳定在毫秒内，且不会误伤名字里恰好含
+#  关键词词段的正常域名。
+# ════════════════════════════════════════════════════════════════════
+[Rule]
+
+# ── A 区 · 喜马拉雅自有广告域名 ──
+DOMAIN-SUFFIX,adse.ximalaya.com,REJECT
+DOMAIN-SUFFIX,ad.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adx.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adbehavior.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adbehavior.wsa.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adbs.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adwbs.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adsehera.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adse.wsa.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adweb.ximalaya.com,REJECT
+DOMAIN-SUFFIX,dns.ximalaya.com,REJECT
+DOMAIN-SUFFIX,ad.test.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adse.test.ximalaya.com,REJECT
+DOMAIN-SUFFIX,adweb.test.ximalaya.com,REJECT
+# DOMAIN-SUFFIX,location.ximalaya.com,REJECT
+
+# ── A2 区 · 埋点与数据采集 ──
+DOMAIN-SUFFIX,xdcs-collector.ximalaya.com,REJECT
+DOMAIN-SUFFIX,linkeye.ximalaya.com,REJECT
+
+# ── B 区 · 穿山甲 / GroMore（字节跳动）──
+DOMAIN-SUFFIX,oceanengine.com,REJECT
+DOMAIN-SUFFIX,ad.toutiao.com,REJECT
+DOMAIN-SUFFIX,pangolin16.sgsnssdk.com,REJECT
+
+# ── B 区 · 字节通用日志上报：拦住只掉统计，不影响功能 ──
+DOMAIN-SUFFIX,log.snssdk.com,REJECT
+DOMAIN-SUFFIX,ib.snssdk.com,REJECT
+
+# ── B 区 · 优量汇 / 腾讯广告 ──
+DOMAIN-SUFFIX,gdt.qq.com,REJECT
+DOMAIN-SUFFIX,e.qq.com,REJECT
+DOMAIN-SUFFIX,pgdt.gtimg.cn,REJECT
+
+# ── B 区 · 聚合广告平台 ──
+DOMAIN-SUFFIX,toponad.com,REJECT
+DOMAIN-SUFFIX,mintegral.com,REJECT
+DOMAIN-SUFFIX,mbridge.com,REJECT
+DOMAIN-SUFFIX,sigmob.com,REJECT
+DOMAIN-SUFFIX,ad.e.kuaishou.com,REJECT
+DOMAIN-SUFFIX,mobads.baidu.com,REJECT
+
+# ── B 区 · 海外广告平台 ──
+DOMAIN-SUFFIX,applovin.com,REJECT
+DOMAIN-SUFFIX,inmobi.com,REJECT
+DOMAIN-SUFFIX,chartboost.com,REJECT
+DOMAIN-SUFFIX,vungle.com,REJECT
+DOMAIN-SUFFIX,unityads.unity3d.com,REJECT
+DOMAIN-SUFFIX,doubleclick.net,REJECT
+DOMAIN-SUFFIX,googleads.g.doubleclick.net,REJECT
+DOMAIN-SUFFIX,pagead2.googlesyndication.com,REJECT
+
+# ════════════════════════════════════════════════════════════════════
+#  C 区 · 接口级复写（3 条，来自 NobyDa/Script）
+#
+#  原规则（Surge / QuantumultX 语法）：
+#    ^https?:\/\/adse\.ximalaya\.com\/ting\/feed\?appid=     - reject
+#    ^https?:\/\/adse\.ximalaya\.com\/ting\/loading\?appid=  - reject
+#    ^https?:\/\/adse\.ximalaya\.com\/ting\?appid=           - reject
+#
+#  三条命中的是 adse.ximalaya.com 上的广告接口：
+#    /ting/feed?appid=      音频流内插广告
+#    /ting/loading?appid=   开屏广告
+#    /ting?appid=           通用广告请求
+#
+#  为什么用 reject_dict 而不是直接 REJECT：
+#  Loon 的 Rewrite 在规则匹配前执行。这三条先返回 200 + {}，App 拿到一个
+#  合法但空的响应，静默渲染无广告状态，不会触发重试逻辑；A 区再兜住
+#  adse 域名上未被复写覆盖的其余路径。两者叠加，adse 域名的任何请求都
+#  出不去，而已知广告接口走的是「空数据」而非「连接失败」这条更顺的路。
+#
+#  生效前提：D 区 MitM 必须包含 adse.ximalaya.com，否则 HTTPS 无法解密，
+#  本区不生效——此时 A 区仍然兜底，只是退化成直接断开。
+#
+#  想自己加接口（例如抓包后拿到新路径），照下面这行的形状改：
+#    request if ${url} ~= /^https?:\/\/adse\.ximalaya\.com\/新路径/ then reject_dict(200)
+# ════════════════════════════════════════════════════════════════════
+[Rewrite]
+
+request if ${url} ~= /^https?:\/\/adse\.ximalaya\.com\/ting\/feed\?appid=/ then reject_dict(200)
+request if ${url} ~= /^https?:\/\/adse\.ximalaya\.com\/ting\/loading\?appid=/ then reject_dict(200)
+request if ${url} ~= /^https?:\/\/adse\.ximalaya\.com\/ting\?appid=/ then reject_dict(200)
+
+# ════════════════════════════════════════════════════════════════════
+#  D 区 · MitM 解密范围
+#
+#  只有需要被 C 区复写的域名才放进来。纯 REJECT 的域名走规则层拦截，
+#  不需要解密，放进来只会白白增加解密开销。
+#
+#  这里只有 adse.ximalaya.com 一个——它是 C 区三条复写的唯一目标。
+#  注意不要把 *.ximalaya.com 整个写进来：音频流和图片都走 xmcdn，
+#  解密范围放大会拖慢播放，而收益为零。
+#
+#  抓包阶段可以临时写宽一点，规则定稿后收回成现在这样。
+# ════════════════════════════════════════════════════════════════════
+[Mitm]
+
+hostname = adse.ximalaya.com

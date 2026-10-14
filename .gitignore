@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Loon 配置备份可能含个人节点信息
+default.lcf.backup-*

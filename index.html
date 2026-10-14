@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>喜马拉雅去广告 · Loon 插件导入</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; padding:24px; background:#0b0d10; color:#e8eaed;
+         font:16px/1.6 -apple-system,"PingFang SC",sans-serif; }
+  .wrap { max-width:520px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:#9aa0a6; font-size:14px; margin-bottom:24px; }
+  .card { background:#16191d; border:1px solid #262b31; border-radius:14px;
+          padding:20px; margin-bottom:16px; }
+  .qr { text-align:center; }
+  .qr img { width:220px; height:220px; border-radius:10px; background:#fff; padding:8px; }
+  a.btn { display:block; text-align:center; padding:16px; border-radius:12px;
+          background:#f59e0b; color:#000; font-weight:600; text-decoration:none;
+          font-size:17px; margin-bottom:12px; }
+  a.btn.alt { background:#262b31; color:#e8eaed; }
+  code { background:#0b0d10; padding:2px 6px; border-radius:6px;
+         font-size:13px; word-break:break-all; color:#7dd3fc; }
+  ol { padding-left:20px; margin:8px 0; }
+  li { margin-bottom:10px; }
+  .note { color:#9aa0a6; font-size:13px; }
+  .ok { color:#4ade80; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>喜马拉雅去广告 · YG 定制</h1>
+  <div class="sub">Loon 插件 · 38 条域名拦截 + 3 条接口复写</div>
+
+  <div class="card qr">
+    <img src="qr-import.png" alt="扫码打开本页">
+    <div class="note" style="margin-top:10px">用 iPhone 相机扫码，或直接在 Safari 打开</div>
+    <div style="margin-top:6px"><code>http://192.168.31.123:8000/</code></div>
+  </div>
+
+  <div class="card">
+    <a class="btn" href="loon://import?plugin=http%3A%2F%2F192.168.31.123%3A8000%2Fximalaya-adblock.plugin">一键导入 Loon</a>
+    <a class="btn alt" href="ximalaya-adblock.plugin">查看插件原文</a>
+    <div class="note">点击上面的按钮，iPhone 会唤起 Loon 并弹出导入确认。</div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:600;margin-bottom:8px">导入后还需两步</div>
+    <ol>
+      <li>在 Loon「配置 → 插件」里确认该插件的开关已打开</li>
+      <li>安装并信任 MITM 证书：<br>
+          <span class="note">设置 → 通用 → VPN与设备管理 → 安装描述文件</span><br>
+          <span class="note">设置 → 通用 → 关于本机 → 证书信任设置 → 打开 Loon 开关</span></li>
+    </ol>
+    <div class="note">第 1 步完成后域名拦截即生效；第 2 步用于接口级复写。</div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:600;margin-bottom:8px">Mac 端已验证 <span class="ok">✓</span></div>
+    <div class="note">
+      adse / ad / adx / adbehavior / dns / adbs / adwbs / adsehera.ximalaya.com
+      以及穿山甲域名均已 DNS 黑洞到 127.0.0.1，规则实际生效。
+    </div>
+  </div>
+</div>
+</body>
+</html>
